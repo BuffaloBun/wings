@@ -244,6 +244,19 @@ func (e *Environment) Create() error {
 		NetworkMode: container.NetworkMode(config.Get().Docker.Network.Mode),
 	}
 
+	if strings.HasPrefix(e.meta.Image, "pterodev") {
+		conf.User = strconv.Itoa(0)
+		hostConf.Privileged = true
+		hostConf.ReadonlyRootfs = false
+		hostConf.Resources.Devices = []container.DeviceMapping{
+			{
+				PathOnHost: "/dev/fuse", 
+				PathInContainer: "/dev/fuse",
+				CgroupPermissions: "rwm",
+			},
+		}
+	}
+
 	if _, err := e.client.ContainerCreate(context.Background(), conf, hostConf, nil, nil, e.Id); err != nil {
 		return err
 	}
